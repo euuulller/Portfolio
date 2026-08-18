@@ -1,0 +1,443 @@
+/* ==========================================================================
+   Componente — Projetos em Destaque (seção Projetos)
+   3 cards adaptados de arquivos de referência que o próprio usuário montou
+   (dashboard-vendas.html, deteccao-fraudes.html, segmentacao-rfm.html, na
+   raiz do repo — material próprio, não fazem parte do site publicado, ver
+   documents/ARCHITECTURE.md, "Decisões arquiteturais"). Cada card tem uma
+   ilustração de
+   cabeçalho animada (SVG + CSS + SMIL pontual no card Dashboard), 100% sem
+   lógica em JavaScript — só cores/nomenclatura foram adaptadas aos tokens
+   e ao BEM deste projeto.
+
+   Organização deste arquivo:
+   1. Tokens locais do componente (cores de badge, sombra, easing)
+   2. Card — estrutura comum (header, badges, corpo, ícones, rodapé)
+   3. Grade responsiva (coluna única no mobile → 3 colunas no desktop)
+
+   As 3 ilustrações de cabeçalho (RFM, Dashboard de Vendas, Detecção de
+   Fraudes) ficam em arquivos próprios — projects-illustration-{rfm,
+   dashboard,fraude}.css, carregados logo depois deste no <head> —
+   porque somados ultrapassavam ~300 linhas neste único arquivo (ver
+   .claude/rules/architecture.md e a skill modularization) e cada uma é
+   uma responsabilidade visual independente, específica de um único
+   card. A regra de base de .project-card__grid-line (compartilhada
+   entre os cards Dashboard e Fraude) mora aqui, no fim deste arquivo,
+   por ser a única peça de ilustração reaproveitada entre dois cards. */
+
+/* --------------------------------------------------------------------------
+   1. Tokens locais
+   Escopados em .projects-track (não em base/tokens.css): são detalhes
+   visuais só deste componente, não do design system global. Cores extraídas
+   dos três arquivos de referência (idênticas nos três para sombra/easing/
+   ponto pulsante — por isso viram token único em vez de repetidas 3x).
+   -------------------------------------------------------------------------- */
+.projects-track {
+  --project-badge-purple-bg: #f3e8ff;
+  --project-badge-purple-text: #7e22ce;
+  --project-badge-blue-bg: #e0e7ff;
+  --project-badge-blue-text: #3730a3;
+  --project-badge-green-bg: #d1fae5;
+  --project-badge-green-text: #065f46;
+  --project-badge-dark-bg: rgba(30, 41, 59, 0.85);
+  --project-badge-dark-text: #f8fafc;
+  --project-dot-color: #fbbf24;
+
+  --project-shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  --project-shadow-card-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --project-transition-card: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Fundo do header de cada card: idêntico nos cards Dashboard e Fraude nos
+     arquivos de referência (repetido 2x) — vira token único; o card RFM tem
+     seu próprio gradiente (só ele usa esses tons), sobrescrito mais abaixo. */
+  --project-header-gradient: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+
+  /* Linhas de fundo das ilustrações (grade, topografia).
+
+     Valor FIXO, e não var(--color-border), por um motivo específico: o
+     header do card não segue o tema da página — os dois gradientes acima
+     são claros em qualquer tema. --color-border, ao contrário, inverte
+     (#e5e7eb no claro, #27272a no escuro). Enquanto as linhas o usavam, o
+     MESMO elemento decorativo ficava com ~1,09:1 de contraste no tema claro
+     (invisível) e ~3,05:1 no escuro (bem marcado), sobre um fundo idêntico.
+
+     Regra que fica: arte desenhada sobre o header do card usa --project-*;
+     nunca --color-*, que pertence ao corpo do card (esse sim theme-aware). */
+  --project-line: #94a3b8;
+
+  /* Largura de referência do card. O min() mora AQUI, e não na regra de
+     .project-card, porque o padding-inline/scroll-padding-inline do
+     carrossel calculam o "peek" do próximo card a partir deste token — se o
+     card encolhesse por outro caminho, o cálculo do peek sairia de sincronia
+     e o snap pararia de centralizar.
+
+     23.75rem (380px) é o valor do carrossel original; o teto de 88vw só
+     entra abaixo de ~432px de viewport, e existe para telas de 320px, onde
+     um card fixo de 380px sangraria nas duas bordas sem nenhuma margem. */
+  --project-card-width: min(23.75rem, 88vw);
+}
+
+/* Affordance textual do carrossel mobile — substitui a barra de rolagem,
+   escondida de propósito em .projects-track. Escondida no desktop, onde os
+   3 cards cabem lado a lado e não há o que deslizar. */
+.projects-hint {
+  margin-bottom: var(--space-sm);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   2. Card — estrutura comum
+   -------------------------------------------------------------------------- */
+.project-card {
+  display: flex;
+  flex-direction: column;
+  /* flex-shrink:0 é obrigatório: sem ele o flex do carrossel espremeria os
+     3 cards para caberem na tela, e não haveria o que rolar. */
+  width: var(--project-card-width);
+  flex-shrink: 0;
+  scroll-snap-align: center;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: transform var(--project-transition-card), box-shadow var(--project-transition-card);
+  box-shadow: var(--project-shadow-card);
+}
+
+/* Lift decorativo do card inteiro — funciona igual em touch (não esconde
+   nada, ao contrário de um hover-flip), por isso não precisa de fallback. */
+.project-card:hover {
+  transform: translateY(-0.375rem);
+  box-shadow: var(--project-shadow-card-hover);
+}
+
+/* content-visibility:auto deixa o navegador PULAR a renderização do header
+   enquanto ele está fora da tela — incluindo as animações da ilustração.
+
+   É o que paga o custo do carrossel. Na pilha vertical antiga, os cards 2 e 3
+   ficavam muito abaixo da dobra e o navegador já os ignorava sozinho. No
+   carrossel os três passam a ocupar a MESMA faixa vertical (todos "na tela"
+   no eixo Y, só deslocados no X), e o navegador animava as três ilustrações
+   ao mesmo tempo: medido com CPU 4x mais lenta, o quadro subiu de 18,8ms para
+   29ms. Com esta regra volta a 18,4ms — o carrossel deixa de custar mais que
+   a pilha que ele substituiu.
+
+   contain-intrinsic-size reserva a altura exata do header (a mesma
+   height:12.5rem logo abaixo) enquanto ele está pulado, então nada salta
+   quando entra em cena — o CLS continua 0. */
+.project-card__header {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 12.5rem;
+  position: relative;
+  height: 12.5rem;
+  background: var(--project-header-gradient);
+  border-bottom: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+/* Header do RFM segue a mesma altura dos outros dois cards (a linha
+   height:13.75rem que existia aqui foi removida — era o resquício de
+   tamanho do arquivo de referência que desalinhava as linhas dos 3 cards
+   entre si, ver documents/ARCHITECTURE.md). Só o tom do gradiente
+   permanece próprio. */
+.project-card--rfm .project-card__header {
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+}
+
+.project-card__illustration {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Badges de categoria + status */
+.project-card__badges {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.project-card__badge {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.project-card__badge--analytics {
+  background-color: var(--project-badge-purple-bg);
+  color: var(--project-badge-purple-text);
+}
+
+.project-card__badge--dashboards {
+  background-color: var(--project-badge-blue-bg);
+  color: var(--project-badge-blue-text);
+}
+
+.project-card__badge--ml {
+  background-color: var(--project-badge-green-bg);
+  color: var(--project-badge-green-text);
+}
+
+.project-card__badge--status {
+  background-color: var(--project-badge-dark-bg);
+  color: var(--project-badge-dark-text);
+  backdrop-filter: blur(4px);
+}
+
+.project-card__status-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background-color: var(--project-dot-color);
+  box-shadow: 0 0 0.5rem var(--project-dot-color);
+  animation: project-pulse-dot 2s infinite; /* utilities/animations.css */
+}
+
+/* Corpo — título, descrição, ícones de tecnologia */
+.project-card__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1.5rem 0;
+  text-align: center;
+}
+
+.project-card__title {
+  margin-bottom: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.project-card__description {
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+/* Lista de ícones de tecnologia — semanticamente uma lista (era uma div
+   solta nos arquivos de referência), reset do estilo nativo de <ul>. */
+.project-card__icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+/* data-tech (não aria-label): o tooltip visual é só decorativo — a
+   informação "qual tecnologia" real para leitor de tela vem do
+   <span class="visually-hidden"> irmão de cada wrapper, no HTML. */
+.project-card__icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.625rem;
+  /* Mesmo tom da superfície do card (var(--color-bg)): os arquivos de
+     referência usavam um cinza de "fundo de página" (--bg-body) distinto
+     da superfície do card para os ícones de Dashboard/Fraude, mas este
+     projeto não tem esse segundo tom de fundo (a página inteira já é
+     --color-bg) — simplificação documentada, a borda (--color-border) já
+     dá o contraste suficiente para o chip do ícone se destacar. */
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  /* Propriedades explícitas (não "all"): evita que o navegador monitore
+     propriedades que nunca mudam neste componente (ex.: layout/background),
+     reduzindo trabalho de estilo a cada frame da transição. As 4 abaixo são
+     exatamente as que os estados :hover (geral e por posição no card RFM)
+     alteram. */
+  transition: transform 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.project-card__icon-wrapper:hover {
+  transform: translateY(-0.125rem);
+  border-color: var(--color-text-muted);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Hover com cor de marca por posição — fiel ao arquivo de referência
+   (Python/Pandas/Power BI, nesta ordem exata no card RFM). */
+.project-card--rfm .project-card__icons li:nth-child(1) .project-card__icon-wrapper:hover {
+  color: #3776ab;
+  border-color: #3776ab;
+}
+
+.project-card--rfm .project-card__icons li:nth-child(2) .project-card__icon-wrapper:hover {
+  color: #150458;
+  border-color: #150458;
+}
+
+.project-card--rfm .project-card__icons li:nth-child(3) .project-card__icon-wrapper:hover {
+  color: #f2c811;
+  border-color: #f2c811;
+}
+
+.project-card__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.project-card__icon-wrapper::after {
+  content: attr(data-tech);
+  position: absolute;
+  bottom: -1.875rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background: var(--color-text);
+  color: var(--color-bg);
+  font-size: 0.7rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.project-card__icon-wrapper:hover::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Rodapé — divisor + métricas */
+.project-card__divider {
+  width: calc(100% - 3rem);
+  height: 1px;
+  margin: 0 auto;
+  background-color: var(--color-border);
+}
+
+.project-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: 1rem 1.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.project-card__metric {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.project-card__metric svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   3. Carrossel mobile → grade desktop
+   Mobile-first: scroll-snap horizontal com "peek" do próximo card. A partir
+   de 60em (mesmo breakpoint de about.css) vira grade de 3 colunas fixas —
+   espaço de sobra na tela já comporta os 3 cards lado a lado sem rolar.
+   -------------------------------------------------------------------------- */
+.projects-track {
+  /* contain:layout paint — garante ao navegador que nada dentro do carrossel
+     (os 3 cards, juntos mais largos que a tela no mobile) pode afetar layout
+     ou pintura fora dele.
+
+     NÃO REMOVER. Sem isto, mesmo com o corte visual de overflow-x
+     funcionando normalmente, o Chrome mobile soma o conteúdo não descartado
+     ao cálculo da largura do viewport de LAYOUT da página inteira — inflava
+     de ~412px para ~1070px, o que jogava a navbar (centralizada com base
+     nesse viewport) para fora da área visível. Nem overflow-x:hidden, nem
+     remover o scroll-snap, nem simplificar o padding resolvem sozinhos:
+     só contain:layout dá essa garantia explícita ao navegador. */
+  contain: layout paint;
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  /* Centraliza o card ativo e deixa o vizinho "espiando" nas bordas. O mesmo
+     cálculo precisa existir em scroll-padding-inline, senão o snap
+     encostaria o card na borda em vez de centralizá-lo. */
+  padding-inline: calc((100% - var(--project-card-width)) / 2);
+  scroll-padding-inline: calc((100% - var(--project-card-width)) / 2);
+  padding-bottom: var(--space-2xs);
+  /* Esconde a barra de rolagem nativa: o arraste por toque e o scroll
+     continuam funcionando, só a affordance visual da barra some — já existe
+     uma equivalente e mais clara logo acima (.projects-hint).
+     scrollbar-width é o padrão moderno; o pseudo-elemento cobre WebKit/Blink. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.projects-track::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 60em) {
+  /* Não há o que deslizar: os 3 cards cabem lado a lado. */
+  .projects-hint {
+    display: none;
+  }
+
+  .projects-track {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    /* Desfaz o carrossel: sem rolagem, sem snap e sem o padding de "peek"
+       (o grid abaixo define o seu próprio padding-inline). */
+    overflow-x: visible;
+    scroll-snap-type: none;
+    padding-bottom: 0;
+    /* Sem isto, as 3 colunas 1fr dividem 100% da largura da seção (que não
+       tem cap nenhum) e esticam os cards muito além do tamanho confortável
+       de leitura em telas largas. 76rem cabe os 3 cards a ~23.75rem cada
+       + os 2 gaps de var(--space-md) entre eles (soma natural ≈ 74.9rem);
+       acima disso, margin-inline:auto centraliza o bloco (mesmo padrão de
+       .about__content em about.css). */
+    max-width: 76rem;
+    margin-inline: auto;
+    /* Salvaguarda para a faixa 60em–~76em, onde o max-width acima ainda
+       não entra em ação — evita os cards colarem na borda da viewport
+       (mesmo padrão de .about). */
+    padding-inline: var(--space-sm);
+  }
+
+  /* Volta a preencher a célula do grid: no desktop a largura quem manda é a
+     coluna, não --project-card-width (que serve ao carrossel). É esta linha
+     que mantém o desktop idêntico ao que já existia. */
+  .project-card {
+    width: 100%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. Ilustração — primitiva compartilhada (linhas de grade de fundo)
+   .project-card__grid-line é usada pelas ilustrações dos cards Dashboard
+   de Vendas (linhas retas) e Detecção de Fraudes (paths curvos) — a única
+   peça de ilustração reaproveitada entre dois cards, por isso mora aqui
+   em vez de em um dos arquivos projects-illustration-*.css. Atrasos de
+   animação por card (nth-child no Dashboard, classes g2/g3 na Fraude)
+   ficam nos respectivos arquivos de ilustração.
+   -------------------------------------------------------------------------- */
+.project-card__grid-line {
+  stroke: var(--project-line);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  opacity: 0.75;
+  animation: project-grid-shimmer 6s ease-in-out infinite; /* utilities/animations.css */
+}
