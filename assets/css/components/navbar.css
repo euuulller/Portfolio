@@ -1,0 +1,275 @@
+/* ==========================================================================
+   Componente — Navbar
+   Pill flutuante centralizada: marca (iniciais em círculo) + links em
+   ícone com tooltip (aria-label exibido via ::after) + toggle de tema +
+   botão de currículo.
+   Sem hambúrguer/menu colapsável: a própria pill encolhe no mobile e
+   mantém os alvos (marca + 5 links + tema + currículo) sempre visíveis — cabem
+   confortavelmente numa única linha em qualquer largura de tela, então
+   um painel escondível deixou de ser necessário. O toggle de tema segue
+   o mesmo "checkbox hack" já usado no resto do projeto: um
+   <input type="checkbox"> oculto controla o estado via :checked (lido em
+   base/tokens.css), sem uma linha de JavaScript dedicada a UI de
+   navegação — o único script que toca a navbar é o scroll-spy
+   (assets/js/modules/scroll-spy.js), que já lia a classe .navbar__link e
+   não precisou de nenhuma mudança.
+   ========================================================================== */
+
+/* Pill flutuante, sempre visível, em qualquer ponto do scroll. Precisa ser
+   fixed, não sticky: sticky só gruda enquanto a caixa do elemento PAI
+   ainda está na tela, e aqui o pai (<header>) não tem altura própria —
+   ele só existia pra centralizar a navbar, então mal começava o scroll,
+   o pai já tinha saído da tela e a navbar sumia junto. fixed é relativo
+   à viewport, não a um elemento pai — não tem esse limite. Como fixed
+   tira a navbar do fluxo normal, o espaço que ela ocuparia é reservado
+   via padding-top no body (base.css), não mais num <header> wrapper.
+   pointer-events:none no wrapper + pointer-events:auto só na pill evita
+   que a faixa inteira de 1rem no topo da tela bloqueie cliques em
+   conteúdo por trás dela (a pill em si é bem mais estreita). */
+.navbar {
+  position: fixed;
+  top: 1rem;
+  inset-inline: 0;
+  z-index: var(--z-navbar);
+  display: flex;
+  justify-content: center;
+  padding-inline: var(--space-sm);
+  pointer-events: none;
+}
+
+/* O "corpo" visual da pill: fundo translúcido com blur (efeito vidro),
+   borda sutil, cantos totalmente arredondados. width:fit-content mantém a
+   pill do tamanho do conteúdo (não da tela inteira) em qualquer breakpoint
+   acima do mobile — ver media query no fim deste arquivo para a exceção. */
+.navbar__bar {
+  pointer-events: auto;
+  width: fit-content;
+  max-width: min(100%, 47.5rem);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  background: var(--navbar-bg);
+  border: 1px solid var(--navbar-border);
+  border-radius: var(--radius-pill);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  transition: background var(--transition-base), border-color var(--transition-base);
+}
+
+/* Marca — iniciais em círculo sólido de alto contraste. Reaproveita as
+   mesmas cores do link ativo (--navbar-active-*) em vez de um token
+   próprio: visualmente reforça que é "o item ativo" quando a Hero (topo
+   da página) está em foco. */
+.navbar__brand {
+  display: inline-grid;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--navbar-active-bg);
+  color: var(--navbar-active-text);
+  font-size: 0.78rem;
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: -0.02em;
+  transition: transform var(--transition-base);
+}
+
+.navbar__brand:hover {
+  transform: translateY(-1px);
+}
+
+.navbar__links {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+/* Cada link é um alvo circular só com ícone. O rótulo textual continua
+   presente para leitor de tela (aria-label, já exigido pra um alvo sem
+   texto visível) e dobra como fonte do tooltip via content: attr() —
+   sem duplicar o mesmo texto em outro lugar do HTML. */
+.navbar__link {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 50%;
+  color: var(--navbar-text-muted);
+  transition: color var(--transition-base), background var(--transition-base), transform var(--transition-base);
+}
+
+.navbar__link svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+}
+
+.navbar__link:hover {
+  color: var(--navbar-text);
+  background: var(--navbar-hover-overlay);
+  transform: translateY(-1px);
+}
+
+/* Link da seção atual: pill sólida de alto contraste, distinta dos demais
+   links (que ficam em tom neutro/muted). Classe alternada pelo scroll-spy
+   (assets/js/modules/scroll-spy.js). */
+.navbar__link--active,
+.navbar__link--active:hover {
+  color: var(--navbar-active-text);
+  background: var(--navbar-active-bg);
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.2);
+}
+
+.navbar__link::after {
+  content: attr(aria-label);
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  left: 50%;
+  padding: 0.35rem 0.55rem;
+  border-radius: var(--radius-sm);
+  background: var(--navbar-chip-bg);
+  color: var(--navbar-chip-text);
+  font-size: 0.68rem;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -4px);
+  transition: opacity var(--transition-base), transform var(--transition-base);
+}
+
+.navbar__link:hover::after,
+.navbar__link:focus-visible::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.navbar__divider {
+  width: 1px;
+  height: 1.4rem;
+  flex-shrink: 0;
+  background: var(--navbar-border);
+}
+
+/* Toggle de tema — input oculto (focável) + label circular com dois
+   ícones (sol/lua) sobrepostos na mesma célula de grid. A troca de ícone
+   e a troca de todos os tokens de cor do site são resolvidas pelo mesmo
+   :checked, em base/tokens.css — ver #navbar-theme-toggle lá. */
+.navbar__theme-toggle {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 50%;
+  color: var(--navbar-text-muted);
+  cursor: pointer;
+  transition: color var(--transition-base), background var(--transition-base), transform var(--transition-base);
+}
+
+.navbar__theme-toggle:hover {
+  color: var(--navbar-text);
+  background: var(--navbar-hover-overlay);
+  transform: translateY(-1px);
+}
+
+/* O <input> é .visually-hidden (não display:none), então continua
+   recebendo foco de teclado — este seletor de irmão propaga o anel de
+   foco pro <label> visível quando o checkbox oculto está em
+   :focus-visible (mesmo princípio já usado no toggle de tema anterior). */
+.navbar__theme-input:focus-visible + .navbar__theme-toggle {
+  outline: 2px solid var(--navbar-text);
+  outline-offset: 2px;
+}
+
+.navbar__theme-icon {
+  grid-area: 1 / 1;
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  transition: opacity var(--transition-base), transform var(--transition-base);
+}
+
+.navbar__theme-icon--moon {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.6);
+}
+
+.navbar__theme-input:checked ~ .navbar__theme-toggle .navbar__theme-icon--sun {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.6);
+}
+
+.navbar__theme-input:checked ~ .navbar__theme-toggle .navbar__theme-icon--moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+/* O ícone indica o tema ATUAL da página (sol = clara, lua = escura), e o
+   tema agora é a inversão da preferência do SO — ver base/tokens.css. Logo,
+   sob SO escuro, os dois estados do checkbox trocam de lado: desmarcado
+   passa a significar página escura (lua) e marcado, página clara (sol).
+
+   Sem este bloco, quem usa o SO no escuro veria uma página escura com um
+   sol desenhado no botão — o ícone contradizendo o que está na tela.
+
+   As duas regras sem :checked reafirmam opacity/transform explicitamente
+   (em vez de contarem com o valor default do sol), porque aqui elas
+   precisam VENCER as regras de cima: mesma especificidade, resolvido pela
+   ordem no arquivo. */
+@media (prefers-color-scheme: dark) {
+  .navbar__theme-icon--sun {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.6);
+  }
+
+  .navbar__theme-icon--moon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+
+  .navbar__theme-input:checked ~ .navbar__theme-toggle .navbar__theme-icon--sun {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+
+  .navbar__theme-input:checked ~ .navbar__theme-toggle .navbar__theme-icon--moon {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.6);
+  }
+}
+
+/* Abaixo de ~700px: a pill vira largura total (até um teto de 430px),
+   os links se distribuem no espaço disponível, e o tooltip por toque some
+   (não existe :hover persistente em touch — o texto ficaria "grudado"). */
+@media (max-width: 43.75em) {
+  .navbar {
+    top: 0.75rem;
+    padding-inline: 0.75rem;
+  }
+
+  .navbar__bar {
+    width: 100%;
+    max-width: 26.875rem;
+    justify-content: space-between;
+  }
+
+  .navbar__links {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .navbar__brand,
+  .navbar__link,
+  .navbar__theme-toggle {
+    width: 2.15rem;
+    height: 2.15rem;
+  }
+
+  .navbar__link::after {
+    display: none;
+  }
+}
