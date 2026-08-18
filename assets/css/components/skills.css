@@ -1,0 +1,96 @@
+/* ==========================================================================
+   Componente — Habilidades (seção Habilidades)
+   Carrossel "marquee" infinito 100% CSS: duas fileiras de cards de
+   tecnologia rolando em sentidos opostos, sem pausar no hover. A lista de
+   cada fileira é duplicada estaticamente no HTML (não gerada por JS —
+   ver index.html), com aria-hidden="true" em cada card duplicado, só para
+   dar continuidade visual ao loop sem duplicar anúncios em leitor de tela.
+   ========================================================================== */
+
+.skills {
+  padding-block: clamp(var(--space-2xl), 10vw, 6rem);
+  padding-inline: var(--space-sm);
+}
+
+/* overflow:hidden + mask-image: o conteúdo desaparece em degradê nas
+   bordas laterais em vez de cortar os cards em seco. Prefixo -webkit-
+   necessário: mask-image ainda exige prefixo em navegadores baseados em
+   WebKit/Blink. */
+.skills__marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.skills__marquee + .skills__marquee {
+  margin-top: var(--space-md);
+}
+
+.skills__track {
+  display: flex;
+  gap: var(--space-md);
+  width: max-content;
+  /* Contínuo mesmo no hover (o carrossel não pausa mais, por pedido do
+     usuário) — 22s dá uma velocidade perceptível de fluxo constante, sem
+     virar ilegível. */
+  animation: skills-scroll-left 22s linear infinite;
+}
+
+/* Sentido oposto à fileira 1 — evita que as duas fileiras fiquem
+   sincronizadas visualmente (mesmo "compasso" perceptível). Duração um
+   pouco maior que a fileira 1: esta fileira tem mais cards únicos, então
+   uma duração igual em segundos resultaria numa velocidade em
+   pixels/segundo mais lenta — 26s equilibra a percepção de velocidade
+   entre as duas fileiras. */
+.skills__track--reverse {
+  animation-name: skills-scroll-right;
+  animation-duration: 26s;
+}
+
+/* Trajetórias de skills-scroll-left/right: utilities/animations.css. */
+
+.skill-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2xs);
+  width: 11rem;
+  padding: var(--space-md) var(--space-sm);
+  border-radius: var(--radius-md);
+  text-align: center;
+  transition: transform var(--transition-base);
+}
+
+.skill-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Ícone começa esmaecido (--color-text-muted) e sobe pra opacidade cheia
+   (--color-text) no hover do card — a versão monocromática do
+   "grayscale→colorido" das referências originais, adaptada à paleta sem
+   cor de marca deste projeto. */
+.skill-card__icon {
+  width: 40px;
+  height: 40px;
+  color: var(--color-text-muted);
+  transition: color var(--transition-base);
+}
+
+.skill-card:hover .skill-card__icon {
+  color: var(--color-text);
+}
+
+/* Nome e descrição NÃO dependem do hover: em telas touch (sem hover)
+   precisam continuar 100% legíveis sem interação — só o ícone e a
+   elevação do card fazem parte do efeito de destaque. */
+.skill-card__name {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.skill-card__desc {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+}
