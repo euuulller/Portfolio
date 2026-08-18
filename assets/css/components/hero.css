@@ -1,0 +1,46 @@
+/* ==========================================================================
+   Componente — Hero (seção Início)
+   Só o headline monumental, com um glifo SVG inserido no meio do texto.
+   Sem avatar/nome (removidos — a Hero agora é só tipografia). Toda a
+   responsividade é resolvida com clamp() fluido — não há media query
+   própria aqui porque o layout (bloco único centralizado) não muda de
+   estrutura em nenhuma largura de tela, só de escala.
+   ========================================================================== */
+
+.hero {
+  /* section[id] (base.css) já dá altura de quase uma tela cheia — flex +
+     justify-content:center centraliza o headline verticalmente nesse
+     espaço, em vez de ele ficar colado no topo com vazio embaixo. */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  padding-block: clamp(var(--space-xl), 8vw, var(--space-2xl));
+  padding-inline: var(--space-sm);
+}
+
+/* Headline monumental — o único elemento da seção, e o elemento
+   tipográfico dominante de toda a página. font-size vem do token fluido
+   --font-size-hero (40px→104px). O peso 800 + letter-spacing negativo
+   agressivo (mais que o da navbar) é o que dá a sensação de
+   "monumentalidade" sem depender de nenhuma fonte externa. */
+.hero__headline {
+  font-size: var(--font-size-hero);
+  font-weight: var(--font-weight-extrabold);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+/* Glifo SVG inline entre "Data" e "Analyst" — 3 retângulos empilhados com
+   opacidade decrescente, remetendo a "data stack" (camadas de dados).
+   O reset global marca svg{display:block}; aqui sobrescrevemos para
+   inline-block para o glifo ficar no meio do fluxo de texto. width/height
+   em `em` fazem o glifo escalar automaticamente junto com o font-size do
+   headline, sem precisar de um clamp() próprio. */
+.hero__glyph {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-inline: 0.15em;
+  vertical-align: middle;
+}
