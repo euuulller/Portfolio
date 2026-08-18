@@ -1,0 +1,156 @@
+/* ==========================================================================
+   Tokens de design
+   Todas as custom properties (cor, espaço, tipografia, forma, movimento) do
+   projeto. Nenhum valor "mágico" deveria aparecer repetido nos arquivos de
+   componente — se um valor se repete ou representa uma escala intencional,
+   ele vira uma variável aqui. Este arquivo também define o tema escuro
+   (via :has()), então precisa carregar antes de qualquer componente que
+   consuma essas variáveis.
+   ========================================================================== */
+
+:root {
+  /* Declara ao navegador que a página existe nos dois esquemas. Além de
+     habilitar light-dark() abaixo, isto faz barras de rolagem e controles
+     nativos acompanharem o tema — algo que trocar variáveis de cor sozinho
+     não alcança. O valor é sobrescrito nos quatro blocos do fim do arquivo,
+     que são o mecanismo de troca de tema do site inteiro. */
+  color-scheme: light;
+
+  /* cor — página (fase atual: fundo branco, identidade a evoluir)
+
+     Cada token abaixo é declarado DUAS vezes, de propósito:
+       1ª linha — valor claro literal, para navegadores sem light-dark();
+       2ª linha — o par claro/escuro real.
+     Navegador que não entende light-dark() descarta a 2ª declaração como
+     inválida e fica com a 1ª: o site permanece 100% funcional no tema
+     claro, exatamente como já degradava na ausência de :has(). */
+  --color-bg: #ffffff;
+  --color-bg: light-dark(#ffffff, #111111);
+  --color-text: #111111;
+  --color-text: light-dark(#111111, #f5f5f5);
+  --color-focus-ring: #111111;
+  --color-focus-ring: light-dark(#111111, #f5f5f5);
+
+  /* cor — navbar (fiel à referência: pill escura/vidro sobre o fundo branco).
+     A navbar tem sua própria escala de cor porque seu fundo (glass/blur
+     escuro) não segue o tema claro/escuro da página da mesma forma — ela
+     inverte para ficar sempre em contraste com o fundo da página. */
+  --navbar-bg: rgba(17, 17, 17, 0.85);
+  --navbar-bg: light-dark(rgba(17, 17, 17, 0.85), rgba(245, 245, 245, 0.85));
+  --navbar-border: rgba(255, 255, 255, 0.12);
+  --navbar-border: light-dark(rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.12));
+  --navbar-text: #f5f5f5;
+  --navbar-text: light-dark(#f5f5f5, #111111);
+  --navbar-text-muted: #9ca3af;
+  --navbar-text-muted: light-dark(#9ca3af, #4b5563);
+  --navbar-active-bg: #ffffff;
+  --navbar-active-bg: light-dark(#ffffff, #111111);
+  --navbar-active-text: #111111;
+  --navbar-active-text: light-dark(#111111, #ffffff);
+  /* Chip do tooltip dos links/tema da navbar (content: attr(aria-label) em
+     navbar.css). Cor FIXA, não varia com o tema ativo (ao contrário de
+     --navbar-* e --color-*): sendo uma forma 100% opaca, seu contraste com
+     o texto branco não depende do tom da navbar ao redor. */
+  --navbar-chip-bg: #000000;
+  --navbar-chip-text: #ffffff;
+  --navbar-hover-overlay: rgba(255, 255, 255, 0.08);
+  --navbar-hover-overlay: light-dark(rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.08));
+
+  /* espaço — escala usada em gap/padding/margin de todos os componentes */
+  --space-2xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-xl: 3rem;
+  --space-2xl: 4rem;
+
+  /* tipografia — pilha de fontes de sistema, zero fonte externa carregada
+     (decisão registrada em documents/ARCHITECTURE.md: zero request
+     adicional de fonte). */
+  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-size-sm: 0.875rem;
+  /* clamp(mínimo, preferido-fluido, máximo): interpola de 2.5rem (40px) em
+     ~320px de viewport até 6.5rem (104px) a partir de ~1440px, sem travar
+     em um valor fixo em nenhum breakpoint — cresce junto com a tela. */
+  --font-size-hero: clamp(2.5rem, 1.35rem + 5.7vw, 6.5rem);
+  /* 800 em vez de 900: pilhas de fonte de sistema nem sempre têm um corte
+     "black" real — 800 é o peso mais pesado confiável sem depender de
+     font-synthesis do navegador. */
+  --font-weight-extrabold: 800;
+
+  /* cor — texto/superfície secundários da página (subtítulos, placeholders
+     decorativos). Reaproveita os mesmos tons já usados como
+     --navbar-text-muted claro/escuro, mas como token próprio: o fundo da
+     navbar não muda com o tema da mesma forma que o da página, então
+     acoplar os dois criaria uma dependência acidental entre componentes
+     que variam de forma diferente. */
+  --color-text-muted: #4b5563;
+  --color-text-muted: light-dark(#4b5563, #9ca3af);
+  --color-surface-muted: #9ca3af;
+  --color-surface-muted: light-dark(#9ca3af, #3f3f46);
+  /* linha fina de divisor de conteúdo (ex.: separadores da seção Sobre) —
+     cinza neutro, distinto de --navbar-border (que é translúcido, pensado
+     pro vidro da navbar, não pra um fundo sólido de conteúdo). */
+  --color-border: #e5e7eb;
+  --color-border: light-dark(#e5e7eb, #27272a);
+
+  /* forma */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-pill: 999px;
+
+  /* movimento */
+  --transition-base: 200ms ease;
+
+  /* diversos */
+  --z-navbar: 100;
+}
+
+/* ==========================================================================
+   Troca de tema — o toggle INVERTE o padrão do sistema operacional
+   ==========================================================================
+
+   Como todo par claro/escuro já está declarado em light-dark() acima, o
+   mecanismo de troca não repete nenhuma cor: ele só decide qual metade de
+   cada par vale, mexendo em uma única propriedade (color-scheme).
+
+   As quatro combinações:
+
+     SO claro / sem preferência + desmarcado ....... claro
+     SO claro / sem preferência + marcado ......... escuro
+     SO escuro + desmarcado ....................... escuro   ← novo
+     SO escuro + marcado .......................... claro
+
+   Ou seja: o checkbox deixou de significar "escurecer" e passou a
+   significar "o contrário do que o sistema pediu". Antes, quem usava o SO
+   no escuro recebia uma página branca na primeira visita.
+
+   Degradação graciosa, em duas camadas independentes:
+     - sem suporte a :has(), as regras de toggle não aplicam e a página
+       apenas segue o SO;
+     - sem suporte a light-dark(), valem as declarações literais claras de
+       cima e a página fica sempre clara — exatamente o comportamento que
+       já existia antes desta mudança.
+
+   O chip do tooltip (--navbar-chip-*) fica de fora de propósito: é opaco e
+   seu contraste não depende do tema ao redor. */
+
+/* 1. Toggle marcado, partindo do padrão claro → escuro.
+      Sem media query: é esta regra que preserva o comportamento anterior em
+      navegadores que não conhecem prefers-color-scheme. */
+:root:has(#navbar-theme-toggle:checked) {
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* 2. SO escuro, toggle intocado → escuro já na primeira pintura. */
+  :root {
+    color-scheme: dark;
+  }
+
+  /* 3. SO escuro, toggle marcado → volta ao claro. Sem esta regra, o
+        toggle ficaria inerte para quem usa o SO no escuro: as regras 1 e 2
+        pediriam "dark" as duas, e o clique não mudaria nada. */
+  :root:has(#navbar-theme-toggle:checked) {
+    color-scheme: light;
+  }
+}
