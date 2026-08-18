@@ -1,0 +1,127 @@
+/* ==========================================================================
+   Componente — Ilustração do card Projetos: RFM (órbitas de clusterização)
+   Extraído de components/projects.css quando o arquivo ultrapassou ~300
+   linhas somando as 3 ilustrações (ver .claude/rules/architecture.md e a
+   skill modularization) — cada ilustração é uma responsabilidade visual
+   independente, específica de um único card.
+
+   3 "clusters" (grupos de nós) girando em velocidades diferentes ao redor
+   de 3 centros, sobre linhas topográficas de fundo em fluxo lento e um
+   sweep de radar cônico por cima. 100% CSS (@keyframes + transform em
+   <g>/<circle>), sem SMIL. Classes/valores portados de
+   segmentacao-rfm.html (raiz do repo), só o namespace mudou para
+   .project-card__* (ver components/projects.css para a estrutura comum
+   do card e components/section-intro.css/index.html para o restante da
+   seção Projetos).
+
+   As trajetórias (@keyframes) desta ilustração ficam em
+   utilities/animations.css — aqui ficam apenas as declarações `animation:`
+   (duração, easing, delay), junto do elemento que se move.
+   ========================================================================== */
+
+.project-card--rfm {
+  --project-cluster-light: #94a3b8;
+  --project-cluster-mid: #475569;
+  --project-cluster-dark: #0f172a;
+}
+
+/* --project-line (projects.css) e não --color-border: o header deste card é
+   fixo claro, então a linha também precisa ser. Ver o comentário do token. */
+.project-card__topo-line {
+  fill: none;
+  stroke: var(--project-line);
+  stroke-width: 1;
+  stroke-dasharray: 5 6;
+  opacity: 0.75;
+  animation: project-rfm-topo-flow 26s linear infinite;
+}
+
+.project-card__topo-line--l2 {
+  animation-duration: 32s;
+  animation-direction: reverse;
+}
+
+.project-card__topo-line--l3 {
+  animation-duration: 40s;
+}
+
+/* Órbitas e raios usam as cores de cluster declaradas inline no SVG
+   (--project-cluster-light/mid/dark), não --project-line — cada cluster tem
+   o seu tom. Aqui só a opacidade muda: em 0.35/0.3 as trajetórias sumiam
+   sob o gradiente claro do header e os nós pareciam soltos, sem o desenho
+   da órbita que os conecta. */
+.project-card__orbit-path {
+  fill: none;
+  stroke-width: 1;
+  stroke-dasharray: 1 5;
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+
+.project-card__orbit-spoke {
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+.project-card__orbit-node {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.project-card__cluster-core {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: project-rfm-core-breathe 3.2s ease-in-out infinite alternate;
+}
+
+.project-card__cluster-core--c2 {
+  animation-delay: -0.6s;
+  animation-duration: 3.8s;
+}
+
+.project-card__cluster-core--c3 {
+  animation-delay: -1.4s;
+  animation-duration: 2.8s;
+}
+
+.project-card__cluster-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: project-rfm-glow-pulse 4.5s ease-in-out infinite;
+}
+
+/* Grupos de rotação de cada cluster — mesma classe reaproveitada com
+   durações diferentes via modificador (evita animação inline no HTML). */
+.project-card__ring-cw {
+  animation: project-rfm-spin 22s linear infinite;
+}
+
+.project-card__ring-cw--fast {
+  animation-duration: 16s;
+}
+
+.project-card__ring-ccw {
+  animation: project-rfm-spin-rev 34s linear infinite;
+}
+
+.project-card__ring-ccw--fast {
+  animation-duration: 24s;
+}
+
+.project-card__ring-cw2 {
+  animation: project-rfm-spin-rev 18s linear infinite;
+}
+
+.project-card__ring-ccw2 {
+  animation: project-rfm-spin 28s linear infinite;
+}
+
+/* Sweep de radar — camada CSS pura sobreposta ao header via blend mode. */
+.project-card__radar-sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(15, 23, 42, 0.16) 18deg, transparent 46deg, transparent 360deg);
+  animation: project-rfm-sweep-rotate 9s linear infinite;
+}
