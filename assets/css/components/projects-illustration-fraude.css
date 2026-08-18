@@ -1,0 +1,95 @@
+/* ==========================================================================
+   Componente — Ilustração do card Projetos: Detecção de Fraudes
+   Extraído de components/projects.css quando o arquivo ultrapassou ~300
+   linhas somando as 3 ilustrações (ver .claude/rules/architecture.md e a
+   skill modularization). A regra de base de .project-card__grid-line
+   (cor/traço/animação) mora em components/projects.css — é reaproveitada
+   por este card e pelo Dashboard de Vendas; aqui só entra o atraso de
+   animação por classe (g2/g3) e o restante da ilustração, exclusivo deste
+   card.
+
+   Nós fluindo da esquerda pro modelo (hexágono central); um nó "fraude"
+   sofre um desvio de trajetória e vai parar na área de quarentena, no
+   topo. 100% CSS (@keyframes + transform em cada nó), sem SMIL. Classes/
+   valores portados de deteccao-fraudes.html (raiz do repo), só o
+   namespace mudou para .project-card__*.
+
+   As trajetórias (@keyframes) desta ilustração ficam em
+   utilities/animations.css — aqui ficam apenas as declarações `animation:`
+   (duração, easing, delay), junto do elemento que se move.
+   ========================================================================== */
+
+.project-card--fraude {
+  --project-gray-900: #111827;
+  --project-gray-600: #4b5563;
+  /* Era #d1d5db. Alimenta os anéis pulsantes e os nós que fluem — as peças
+     mais claras deste card, que sumiam sob o gradiente do header enquanto
+     os outros dois cards ganhavam --project-line. Alinhado à mesma família
+     de cinza-azulado, para os três cards terem o mesmo peso visual. */
+  --project-gray-300: #aab4c2;
+  --project-gray-100: #f3f4f6;
+}
+
+/* g2/g3 replicam o atraso de animação por classe (não por posição, ao
+   contrário do Dashboard), fiel ao arquivo de referência. */
+.project-card__grid-line--g2 { animation-delay: -2s; }
+.project-card__grid-line--g3 { animation-delay: -4s; }
+
+.project-card__ambient-ring {
+  fill: none;
+  stroke: var(--project-gray-300);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: project-fraude-ambient-pulse 4s ease-out infinite;
+}
+
+.project-card__ambient-ring--r2 { animation-delay: -1.33s; }
+.project-card__ambient-ring--r3 { animation-delay: -2.66s; }
+
+.project-card__scanner-hex {
+  fill: var(--color-bg);
+  stroke: var(--project-gray-900);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: project-fraude-hex-breathe 4s ease-in-out infinite;
+}
+
+/* Os 4 nós compartilham a mesma trajetória de 3s, defasados em 0,75s —
+   um quarto do ciclo — para que o fluxo pareça contínuo. Os atrasos
+   moram aqui, e não em style="" no SVG: mantém o HTML só com estrutura e
+   deixa o ritmo do fluxo editável num lugar só (mesmo padrão dos
+   modificadores --g2/--g3 e --r2/--r3 deste arquivo). */
+.project-card__stream-node {
+  fill: var(--project-gray-300);
+  animation: project-fraude-flow 3s linear infinite;
+}
+
+.project-card__stream-node--n2 { animation-delay: 0.75s; }
+.project-card__stream-node--n3 { animation-delay: 1.5s; }
+.project-card__stream-node--n4 { animation-delay: 2.25s; }
+
+.project-card__fraud-node {
+  fill: var(--project-gray-900);
+  animation: project-fraude-fraud-intercept 4s cubic-bezier(0.4, 0, 0.2, 1) infinite,
+             project-fraude-fraud-color 4s linear infinite;
+}
+
+.project-card__scanner-ring {
+  fill: none;
+  stroke: var(--project-gray-900);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: project-fraude-pulse-ring 4s ease-out infinite;
+}
+
+.project-card__quarantine-icon {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: project-fraude-lock-engage 4s ease-in-out infinite;
+}
+
+.project-card__quarantine-box {
+  animation: project-fraude-quarantine-glow 4s ease-in-out infinite;
+}
