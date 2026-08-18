@@ -1,0 +1,171 @@
+/* ==========================================================================
+   Componente — Sobre Mim (seção Sobre)
+   Foto + badge do GitHub à esquerda, texto de apresentação + métricas à
+   direita — em coluna no mobile, lado a lado a partir de 60em. Paleta
+   monocromática (mesmos tokens da Navbar/Hero), sem as cores de acento
+   (azul/roxo/laranja) da referência original.
+   ========================================================================== */
+
+.about {
+  /* section[id] (base.css) já dá altura de quase uma tela cheia — flex +
+     justify-content:center centraliza o conteúdo verticalmente. Só tem
+     efeito visível quando o conteúdo é mais baixo que a seção (min-height
+     é um piso, não um teto — em telas baixas, onde o conteúdo já
+     ultrapassa isso, nada muda). */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: clamp(var(--space-2xl), 10vw, 6rem);
+  padding-inline: var(--space-sm);
+}
+
+.about__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2xl);
+  max-width: 64rem;
+  margin-inline: auto;
+}
+
+.about__photo {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Foto de perfil circular. object-fit:cover recorta a imagem retangular
+   (718×1166, vertical) para preencher o círculo sem distorcer.
+   background continua definido: cor visível brevemente enquanto a
+   imagem lazy-loaded carrega (--color-surface-muted, mesmo token que já
+   era usado no antigo placeholder). */
+.about__avatar {
+  width: clamp(13rem, 24vw, 17rem);
+  height: clamp(13rem, 24vw, 17rem);
+  border-radius: 50%;
+  background: var(--color-surface-muted);
+  object-fit: cover;
+}
+
+/* Badge do GitHub sobreposto ao canto inferior direito da foto — link
+   real (não decorativo), por isso não é aria-hidden. */
+.about__github {
+  position: absolute;
+  right: 0.25rem;
+  bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: var(--color-text);
+  color: var(--color-bg);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  transition: transform var(--transition-base);
+}
+
+.about__github:hover {
+  transform: scale(1.06);
+}
+
+.about__github svg {
+  width: 20px;
+  height: 20px;
+}
+
+.about__text {
+  max-width: 38rem;
+  text-align: center;
+  /* min-width:0 sobrescreve o padrão min-width:auto dos itens de flex-row
+     — sem isso, este item pode se recusar a encolher abaixo da largura
+     mínima do próprio conteúdo no layout lado a lado (media query no fim
+     do arquivo), o que empurra/sobrepõe visualmente o item vizinho em
+     larguras intermediárias. */
+  min-width: 0;
+}
+
+.about__paragraph {
+  line-height: 1.6;
+}
+
+.about__paragraph + .about__paragraph {
+  margin-top: var(--space-2xs);
+}
+
+/* Termos em destaque: peso maior, sem cor nova (a referência usa azul;
+   aqui o destaque vem só da tipografia, mantendo a paleta monocromática). */
+.about__highlight {
+  font-weight: 700;
+}
+
+.about__divider {
+  height: 1px;
+  background: var(--color-border);
+  margin-block: var(--space-md);
+}
+
+/* justify-content:center + gap fixo em vez de space-between: com
+   space-between, cada item precisava de flex:1 pra se distribuir pela
+   largura toda do container (até 38rem/608px), o que deixava um espaço
+   vazio enorme em volta de cada item (ícone+rótulo+valor tem só
+   ~100-140px de conteúdo real). Com gap fixo, o espaçamento vira um valor
+   direto e controlado, não uma função da largura do container. */
+.about__metrics {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-xl);
+}
+
+.about__metric {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  text-align: center;
+}
+
+/* Divisor vertical fino entre métricas — não aparece depois da última.
+   right: -metade do gap: sem o flex:1 de antes, o item não tem mais uma
+   "fatia" de largura fixa cuja borda direita caía no meio do espaço
+   entre itens — reposicionado pra continuar centralizado no gap. */
+.about__metric:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: calc(var(--space-xl) / -2);
+  transform: translateY(-50%);
+  width: 1px;
+  height: 2.5rem;
+  background: var(--color-border);
+}
+
+.about__metric-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--color-text-muted);
+}
+
+.about__metric-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.about__metric-value {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+}
+
+/* 60em: espaço suficiente pra foto grande + coluna de texto legível lado
+   a lado sem espremer nenhum dos dois — escolhido pelo conteúdo, não por
+   um dispositivo específico. */
+@media (min-width: 60em) {
+  .about__content {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--space-2xl);
+  }
+}
