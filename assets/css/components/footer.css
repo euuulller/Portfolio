@@ -1,0 +1,37 @@
+/* ==========================================================================
+   Componente — Rodapé (site-footer)
+   Texto centralizado, sem borda nem fundo diferente da página — deve
+   parecer continuação natural do bloco de Contato logo acima, não uma
+   seção separada (fora de <main>, mas visualmente no mesmo "container").
+   ========================================================================== */
+
+.site-footer {
+  padding-block: var(--space-2xl) var(--space-xl);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.site-footer__credit {
+  margin-top: var(--space-2xs);
+}
+
+/* display:inline-block: necessário para transform funcionar em conteúdo
+   inline (um <span> puro ignora transform). Ícone decorativo (aria-hidden
+   no <svg>) — a palavra "café" já está escrita no texto ao lado, o ícone
+   não carrega informação própria. Animação do coração é neutralizada sob
+   prefers-reduced-motion (ver accessibility.css); o café nunca anima. */
+.site-footer__heart {
+  display: inline-block;
+  animation: heartbeat 1.5s ease-in-out infinite; /* utilities/animations.css */
+}
+
+.site-footer__coffee {
+  display: inline-block;
+}
+
+.site-footer__heart svg,
+.site-footer__coffee svg {
+  width: 1rem;
+  height: 1rem;
+}
