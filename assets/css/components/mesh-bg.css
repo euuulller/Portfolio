@@ -1,0 +1,119 @@
+/* ==========================================================================
+   Componente — Malha 3D de fundo do Hero (mesh-bg)
+   Contêiner do <canvas> WebGL desenhado por
+   assets/js/modules/mesh-background.js. Este arquivo cuida apenas do
+   ESPAÇO que a animação ocupa e de como ela se funde com a página; a
+   animação em si (geometria, shader, cor por tema) é responsabilidade do
+   módulo JS.
+
+   Degradação graciosa: se o WebGL/Three.js não carregar, o contêiner fica
+   vazio — sem canvas, sem erro visual, sem buraco no layout (é absoluto e
+   aria-hidden). O headline continua legível exatamente igual.
+   ========================================================================== */
+
+/* Contexto de empilhamento do Hero: o contêiner da malha é `position:
+   absolute` e precisa de um pai posicionado para se ancorar à seção (e não
+   à viewport). z-index:1 no headline garante que o texto fique SEMPRE por
+   cima do canvas, independentemente da ordem dos elementos no HTML. */
+.hero {
+  position: relative;
+}
+
+.hero__headline {
+  position: relative;
+  z-index: 1;
+}
+
+/* width:100% + left:0 faz a malha sangrar de ponta a ponta ("full-bleed"),
+   mesmo com a seção limitada por padding: sendo `position: absolute`, a
+   porcentagem resolve contra a caixa de padding da .hero — ou seja, a
+   largura inteira da seção, ignorando o padding-inline dela.
+
+   Aqui havia left:50% + width:100vw + translateX(-50%). O problema é que
+   100vw inclui a largura da barra de rolagem clássica: no desktop a malha
+   ficava ~8px mais larga que a área visível e sobrava 4px para cada lado,
+   criando scroll horizontal na página inteira (medido: scrollWidth -
+   clientWidth = 8). 100% mede a área de conteúdo real e não tem esse
+   efeito colateral.
+
+   top:-6rem + height calc(100% + 6rem) recuperam a faixa reservada à
+   navbar fixa (padding-top do body, ver base/base.css), levando a animação
+   até o topo absoluto da janela, por trás da pill de vidro.
+
+   mask-image dissolve a borda inferior em vez de cortá-la em linha reta —
+   a malha some suavemente antes da seção Sobre. O prefixo -webkit- ainda é
+   exigido por navegadores WebKit/Blink.
+
+   pointer-events:none: a malha é decorativa (aria-hidden no HTML) e não
+   pode capturar cliques destinados ao conteúdo por cima dela. */
+.mesh-bg-container {
+  position: absolute;
+  left: 0;
+  top: -6rem;
+  width: 100%;
+  height: calc(100% + 6rem);
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 98%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 98%, transparent 100%);
+}
+
+/* O renderer do Three.js insere o <canvas> aqui em tempo de execução e já
+   define seu tamanho em pixels via setSize(); estas regras garantem que
+   ele preencha o contêiner também em CSS (o reset já dá display:block a
+   svg/img, mas não a canvas) e acompanhe qualquer redimensionamento. */
+.mesh-bg-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ==========================================================================
+   Variante inferior — fecha a página cobrindo Contato + rodapé
+   ========================================================================== */
+
+/* Âncora do bottom:0 da malha inferior. O <body> cresce com o conteúdo, então
+   "bottom" aqui é o fim do DOCUMENTO, não o fim da viewport — é o que faz a
+   malha terminar exatamente no fim da página, seja qual for a altura do
+   rodapé (que muda com a quebra de linha no mobile).
+
+   Seguro para o que já existe: a navbar é `fixed` (não depende de ancestral
+   posicionado) e o .skip-link é `absolute` sobre um <body> sem margem nem
+   borda, então sua caixa de referência não muda de lugar. */
+body {
+  position: relative;
+}
+
+/* O conteúdo precisa vencer a malha (z-index:0 na classe base). Sem isto os
+   4 cartões de contato e o texto do rodapé ficariam ATRÁS do canvas — que é
+   pointer-events:none, mas ainda assim pintaria por cima. */
+#contato,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
+
+.mesh-bg-container--bottom {
+  /* Sobrescreve o top:-6rem da classe base: aqui a âncora é embaixo. */
+  top: auto;
+  bottom: 0;
+  /* Uma tela (a seção Contato tem min-height calc(100svh - 6rem), ver
+     base/base.css) mais a folga do rodapé. Não precisa ser exato: o degradê
+     abaixo já dissolve o topo da malha muito antes do limite. */
+  height: calc(100svh + 6rem);
+
+  /* Mais discreta que a da Hero: lá a malha corre atrás de um título enorme
+     e sólido; aqui ela passa por trás de cartões de borda fina e texto
+     pequeno, e na força cheia competia com eles pela leitura.
+
+     opacity no contêiner em vez de um uniform novo no shader: o resultado é
+     o mesmo (alfa do canvas × opacidade do elemento) e mantém o shader
+     IDÊNTICO nas duas instâncias — sem ramificação no JS. */
+  opacity: 0.55;
+
+  /* Degradê espelhado: a malha da Hero dissolve embaixo, esta dissolve em
+     cima — as duas somem em direção ao miolo da página. */
+  mask-image: linear-gradient(to top, black 0%, black 62%, transparent 96%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 62%, transparent 96%, transparent 100%);
+}
