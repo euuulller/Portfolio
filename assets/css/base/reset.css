@@ -1,0 +1,46 @@
+/* ==========================================================================
+   Reset
+   Neutraliza os estilos padrão do navegador que mais atrapalham um layout
+   previsível (box model, margens/paddings default, marcadores de lista,
+   sublinhado de link). É o primeiro arquivo carregado — tudo depois dele
+   parte de uma base neutra e consistente entre navegadores.
+   ========================================================================== */
+
+/* box-sizing: border-box em tudo — padding/border passam a entrar na largura
+   declarada em vez de somar a ela, evitando cálculos manuais de largura.
+   Zera margin/padding para não herdar espaçamentos default (h1, ul, etc.). */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Imagens e SVGs não têm o espaço fantasma abaixo da linha de base (comum
+   em elementos inline-replaced) e nunca estouram o contêiner pai. */
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Listas usadas para agrupar itens (ex.: navbar__links) não precisam de
+   marcador — quando a semântica de lista é útil, mas o marcador não é. */
+ul {
+  list-style: none;
+}
+
+/* Links herdam a cor do texto ao redor e não ficam sublinhados por padrão —
+   cada componente decide seu próprio estilo de link (ex.: .navbar__link). */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Inputs (checkboxes usados como "hack" de interação neste projeto) herdam
+   tipografia do contexto em vez da fonte default do navegador. */
+input {
+  font: inherit;
+  color: inherit;
+}
