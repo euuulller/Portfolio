@@ -1,0 +1,113 @@
+/* ==========================================================================
+   Acessibilidade
+   Camada final de overrides, carregada por último de propósito — regras
+   que precisam se sobrepor a qualquer componente já estilizado antes dela.
+   ========================================================================== */
+
+/* Anel de foco visível genérico para qualquer link do site. Componentes
+   específicos (ex.: os checkboxes ocultos da navbar) têm sua própria regra
+   de :focus-visible via seletor de irmão, porque o elemento focado (input)
+   é diferente do elemento visível (label) — ver components/navbar.css. */
+a:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Movimento reduzido — camada única de desligamento.
+   O bloco abaixo tem DUAS partes com estratégias diferentes de propósito:
+
+   a) TRANSIÇÕES: regra universal. Antes, esta lista era enumerada classe a
+      classe (.navbar__bar, .navbar__link, .skip-link, .skill-card…), o que
+      exigia lembrar de incluir cada novo componente com transição — e
+      componentes com transição criados depois (.project-card,
+      .contact-card, .about__github, .project-card__icon-wrapper e os
+      tooltips ::after) de fato ficaram de fora. A regra universal cobre
+      100% dos casos, presentes e futuros, sem manutenção. É o único
+      !important do projeto e ele é obrigatório aqui: o seletor universal
+      tem especificidade 0, então perderia para qualquer `.classe` de
+      componente, independentemente da ordem de carregamento.
+      0.01ms em vez de 0s: mantém a transição "tecnicamente existindo",
+      então eventos transitionend continuam disparando e nenhum código que
+      dependa deles trava — padrão amplamente adotado justamente por isso.
+
+   b) ANIMAÇÕES: lista explícita. Aqui o inverso é verdadeiro — desligar
+      tudo às cegas com um `animation: none` universal deixaria elementos
+      congelados no primeiro quadro, que em várias ilustrações é um estado
+      intencionalmente invisível ou fora de posição (o nó de fraude, por
+      exemplo, nasce em translateX(-20px) com opacity:0). Cada seletor
+      abaixo foi verificado para parar numa composição estática legível. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+
+  /* O scroll automático do marquee de Habilidades é decorativo (a lista
+     de tecnologias continua legível sem ele). Só remover a animation não
+     bastaria: os cards duplicados continuariam ocupando espaço (o dobro
+     de cards em width:max-content), virando uma barra horizontal gigante
+     que só rolaria com scroll manual — pior que a animação em si. Em vez
+     disso: os cards duplicados (aria-hidden="true", só existiam pro
+     loop) somem do layout, e os cards reais quebram linha normalmente,
+     virando uma grade estática e legível. */
+  .skills__track {
+    animation: none;
+    flex-wrap: wrap;
+    width: auto;
+  }
+
+  .skill-card[aria-hidden="true"] {
+    display: none;
+  }
+
+  .skills__marquee {
+    overflow: visible;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  /* Ilustrações dos 3 cards de Projetos (ver components/projects.css e
+     projects-illustration-{rfm,dashboard,fraude}.css) são puramente
+     decorativas — desligar sua animação CSS não tira nenhuma informação
+     do card, título/descrição/ícones/métricas continuam idênticos. Estes
+     seletores unificam os 3 blocos @media que existiam nos arquivos de
+     referência do usuário (dashboard-vendas.html, deteccao-fraudes.html,
+     segmentacao-rfm.html), sem repetir a mesma regra 3x. Sem !important:
+     accessibility.css já carrega por último (mesma especificidade de
+     seletor de classe única, a ordem no <head> decide), diferente dos
+     arquivos de referência originais, que precisavam da declaração mais
+     forte por não terem essa garantia de ordem de carga. Isso cobre só a
+     animação CSS (@keyframes) — a parte SMIL (<animate> nos elementos do
+     card Dashboard) não é alcançada por media query CSS; ver
+     assets/js/modules/reduced-motion.js para o complemento via Web API. */
+  .project-card__status-dot,
+  .project-card__topo-line,
+  .project-card__cluster-core,
+  .project-card__cluster-glow,
+  .project-card__radar-sweep,
+  .project-card__ring-cw,
+  .project-card__ring-ccw,
+  .project-card__ring-cw2,
+  .project-card__ring-ccw2,
+  .project-card__grid-line,
+  .project-card__data-dot,
+  .project-card__chart-shimmer,
+  .project-card__ambient-ring,
+  .project-card__scanner-hex,
+  .project-card__stream-node,
+  .project-card__fraud-node,
+  .project-card__scanner-ring,
+  .project-card__quarantine-icon,
+  .project-card__quarantine-box {
+    animation: none;
+  }
+
+  /* Heartbeat do coração (components/footer.css) é puramente decorativo —
+     a frase "Feito com muito ❤️ e ☕ café" continua legível e completa sem
+     a animação. O ícone do café não anima em nenhum momento, então não
+     precisa (nem pode) ser desligado aqui. */
+  .site-footer__heart {
+    animation: none;
+  }
+}
