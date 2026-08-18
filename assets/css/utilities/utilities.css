@@ -1,0 +1,42 @@
+/* ==========================================================================
+   Utilidades
+   Classes pontuais, reutilizáveis por qualquer componente, que resolvem um
+   problema genérico (esconder visualmente sem remover do fluxo de foco,
+   link de pular navegação). Não pertencem a nenhum componente específico.
+   ========================================================================== */
+
+/* Esconde um elemento visualmente SEM tirá-lo da árvore de foco/leitura —
+   ao contrário de display:none, o elemento continua alcançável por Tab e
+   por leitores de tela. Usada nos checkboxes ocultos da navbar (o clique
+   funciona pelo <label> associado, mas o input em si precisa continuar
+   focável por teclado). Nunca trocar por display:none nesses casos. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Link de "pular para o conteúdo": fica fora da tela até receber foco por
+   teclado, então desliza pra dentro da viewport. Sem ele, um usuário de
+   teclado precisaria tabular por toda a navbar em toda carga de página. */
+.skip-link {
+  position: absolute;
+  top: -3rem;
+  left: var(--space-sm);
+  z-index: 1000;
+  padding: var(--space-2xs) var(--space-sm);
+  background: var(--color-text);
+  color: var(--color-bg);
+  border-radius: var(--radius-sm);
+  transition: top var(--transition-base);
+}
+
+.skip-link:focus {
+  top: var(--space-sm);
+}
