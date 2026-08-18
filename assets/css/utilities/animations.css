@@ -1,0 +1,200 @@
+/* ==========================================================================
+   Animações — @keyframes (fonte única)
+   --------------------------------------------------------------------------
+   Todas as animações declarativas do projeto vivem aqui. @keyframes é
+   resolvido por NOME, em escopo global, independentemente do arquivo em que
+   é declarado — então centralizá-los não muda o resultado de nenhuma
+   cascata; muda o custo de manutenção. Antes, ajustar um tempo exigia
+   caçar o bloco no meio do arquivo do componente; agora todo o "movimento"
+   do site é lido de uma vez, e um nome duplicado (que silenciosamente
+   sobrescreveria outro) fica evidente.
+
+   Cada componente continua dono da SUA declaração `animation:` — duração,
+   easing, delay e iteração ficam no arquivo do componente, junto do
+   elemento que se move. Aqui ficam apenas as trajetórias.
+
+   INVENTÁRIO COMPLETO DO MOVIMENTO DO SITE
+   1. CSS @keyframes ....... 21 animações — este arquivo
+   2. CSS transitions ...... nos arquivos de componente (hover/foco)
+   3. SVG SMIL <animate> ... 19 no card "Dashboard de Vendas" (index.html):
+      6 barras (height + y = 12), 1 polyline de tendência (points) e 6
+      pontos (cy). São inseparáveis da geometria do SVG — não há equivalente
+      em CSS para animar `points` de uma <polyline> — por isso continuam
+      inline; quem as desliga sob prefers-reduced-motion é
+      assets/js/modules/reduced-motion.js (pauseAnimations()), já que
+      media query CSS não alcança SMIL.
+   4. WebGL ................ malha 3D do Hero, em
+      assets/js/modules/mesh-background.js (requestAnimationFrame + shader).
+
+   Todas as animações de 1 a 4 são desligadas sob
+   @media (prefers-reduced-motion: reduce) — ver utilities/accessibility.css.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Habilidades — marquee infinito
+   Duas fileiras rolando em sentidos opostos. O deslocamento de -50% casa
+   com a duplicação estática dos cards no HTML: quando a fileira chega à
+   metade, o conteúdo visível é idêntico ao quadro inicial e o loop reinicia
+   sem salto perceptível.
+   -------------------------------------------------------------------------- */
+@keyframes skills-scroll-left {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes skills-scroll-right {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Projetos — primitivas compartilhadas
+   Usadas por mais de um card: o ponto de status (todos os 3 cards) e o
+   shimmer das linhas de grade (cards Dashboard e Fraude).
+   -------------------------------------------------------------------------- */
+@keyframes project-pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Estes valores VENCEM o `opacity` estático de .project-card__grid-line
+   (projects.css) enquanto a animação roda — uma animação em curso sobrepõe
+   a declaração normal da mesma propriedade. Subir só lá não teria efeito
+   nenhum; a faixa precisa subir aqui. O valor estático continua importando
+   sob prefers-reduced-motion, quando a animação é desligada. */
+@keyframes project-grid-shimmer {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.95; }
+}
+
+/* --------------------------------------------------------------------------
+   Projetos — ilustração RFM (órbitas de clusterização)
+   Linhas topográficas em fluxo, núcleos “respirando”, halos pulsando,
+   anéis girando em velocidades diferentes e o sweep de radar cônico.
+   -------------------------------------------------------------------------- */
+@keyframes project-rfm-topo-flow {
+  to { stroke-dashoffset: -220; }
+}
+
+@keyframes project-rfm-core-breathe {
+  0% { transform: scale(0.85); opacity: 0.75; }
+  100% { transform: scale(1.25); opacity: 1; }
+}
+
+@keyframes project-rfm-glow-pulse {
+  0%, 100% { opacity: 0.08; transform: scale(0.9); }
+  50% { opacity: 0.2; transform: scale(1.1); }
+}
+
+@keyframes project-rfm-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes project-rfm-spin-rev {
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes project-rfm-sweep-rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* --------------------------------------------------------------------------
+   Projetos — ilustração Dashboard de Vendas
+   Complementam a parte SMIL (<animate>) que vive dentro do SVG em
+   index.html — ver o inventário no topo deste arquivo.
+   -------------------------------------------------------------------------- */
+@keyframes project-dashboard-dot-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+}
+
+@keyframes project-dashboard-shimmer-sweep {
+  0%, 20% { transform: translateX(-120%); }
+  60%, 100% { transform: translateX(120%); }
+}
+
+/* --------------------------------------------------------------------------
+   Projetos — ilustração Detecção de Fraudes
+   Coreografia de 4s sincronizada entre nós, scanner e quarentena: os
+   percentuais de cada keyframe são interdependentes (o anel dispara em 50%,
+   exatamente quando o nó fraudulento chega ao hexágono central). Alterar a
+   duração de um exige revisar os demais.
+   -------------------------------------------------------------------------- */
+@keyframes project-fraude-ambient-pulse {
+  0% { transform: scale(0.6); opacity: 0.5; }
+  100% { transform: scale(2.1); opacity: 0; }
+}
+
+@keyframes project-fraude-hex-breathe {
+  0%, 45%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+@keyframes project-fraude-flow {
+  0% { transform: translateX(-20px); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(420px); opacity: 0; }
+}
+
+@keyframes project-fraude-fraud-intercept {
+  0% { transform: translate(-20px, 0); opacity: 0; }
+  10% { transform: translate(40px, -18px); opacity: 1; }
+  20% { transform: translate(80px, 15px); }
+  30% { transform: translate(120px, -10px); }
+  40% { transform: translate(160px, 5px); }
+  50%, 60% { transform: translate(200px, 0); }
+  70% { transform: translate(200px, -95px); }
+  90% { transform: translate(200px, -95px); opacity: 1; }
+  100% { transform: translate(200px, -95px); opacity: 0; }
+}
+
+@keyframes project-fraude-fraud-color {
+  0%, 45% { fill: var(--project-gray-300); }
+  50%, 68% { fill: var(--project-gray-900); }
+  80%, 100% { fill: var(--project-gray-300); }
+}
+
+@keyframes project-fraude-pulse-ring {
+  0%, 45% { transform: scale(0.1); opacity: 0; stroke-width: 0; }
+  50% { transform: scale(0.5); opacity: 1; stroke-width: 4; }
+  70% { transform: scale(2); opacity: 0; stroke-width: 1; }
+  100% { transform: scale(2); opacity: 0; stroke-width: 0; }
+}
+
+@keyframes project-fraude-lock-engage {
+  0%, 60% { opacity: 0.55; transform: scale(1); }
+  65% { opacity: 1; transform: scale(1.2); }
+  75%, 88% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.55; transform: scale(1); }
+}
+
+@keyframes project-fraude-quarantine-glow {
+  0%, 60% { stroke: var(--project-gray-300); }
+  68%, 88% { stroke: var(--project-gray-900); }
+  100% { stroke: var(--project-gray-300); }
+}
+
+/* --------------------------------------------------------------------------
+   Rodapé — batimento do coração
+   Único movimento fora das seções de conteúdo.
+   -------------------------------------------------------------------------- */
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
