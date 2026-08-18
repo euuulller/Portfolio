@@ -1,0 +1,49 @@
+/* ==========================================================================
+   Base
+   Estilos globais aplicados diretamente a elementos raiz (html, body) —
+   não são componentes nem utilitários, são o "chão" da página.
+   ========================================================================== */
+
+html {
+  font-family: var(--font-family-base);
+}
+
+/* Scroll suave só quando o usuário não pediu para reduzir movimento —
+   prefers-reduced-motion respeitado desde a base, não só nos componentes. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+  /* A navbar é fixed (fora do fluxo normal) — sem este espaço reservado,
+     o topo da página ficaria escondido atrás dela. Mesmo valor (6rem)
+     usado no scroll-margin-top e no min-height das seções logo abaixo,
+     pela mesma razão: dar folga pro espaço real da navbar. */
+  padding-top: 6rem;
+}
+
+/* A navbar é fixed (top: 1rem) e flutua por cima do conteúdo. Sem isso,
+   navegar por âncora (ex.: clicar em "Sobre" na navbar) alinha o topo da
+   seção exatamente no topo da viewport, escondendo o início do conteúdo
+   atrás da pill. 6rem é uma folga confortável acima da altura real da
+   navbar + seu offset do topo, em qualquer breakpoint. Regra global: cobre
+   todas as seções atuais e futuras sem precisar repetir por componente. */
+section[id] {
+  scroll-margin-top: 6rem;
+  /* Cada seção ocupa quase uma tela cheia — o scroll revela uma seção por
+     vez, em vez de a próxima já aparecer colada. min-height (não height):
+     seções com mais conteúdo do que isso crescem naturalmente, nada é
+     cortado. svh ("small viewport height") em vez de vh puro: svh já
+     considera a barra de endereço do navegador sempre visível (o cenário
+     mais conservador), evitando o bug clássico do 100vh cortando conteúdo
+     atrás da barra em mobile — vh puro fica como fallback pra navegadores
+     sem suporte a svh. -6rem compensa o espaço ocupado pela navbar no
+     topo (mesmo valor do scroll-margin-top acima). */
+  min-height: calc(100vh - 6rem);
+  min-height: calc(100svh - 6rem);
+}
