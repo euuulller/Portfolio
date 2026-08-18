@@ -1,0 +1,5 @@
+# Site pessoal de portfólio: tudo é público e indexável.
+User-agent: *
+Allow: /
+
+Sitemap: https://euuulller.github.io/Portfolio/sitemap.xml
