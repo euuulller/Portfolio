@@ -1,0 +1,78 @@
+/* ==========================================================================
+   Componente — Ilustração do card Projetos: Dashboard de Vendas
+   Extraído de components/projects.css quando o arquivo ultrapassou ~300
+   linhas somando as 3 ilustrações (ver .claude/rules/architecture.md e a
+   skill modularization). A regra de base de .project-card__grid-line
+   (cor/traço/animação) mora em components/projects.css — é reaproveitada
+   por este card e pelo de Detecção de Fraudes; aqui só entram o atraso de
+   animação por posição e o restante da ilustração, exclusivos deste card.
+
+   Único card com animação SMIL real (<animate> nos atributos height/y/
+   points/cy dos elementos SVG, direto no index.html) — os valores das
+   barras/linha/pontos foram portados exatamente de dashboard-vendas.html
+   (raiz do repo), só o namespace de classe mudou para .project-card__*. É
+   por causa desta ilustração que assets/js/modules/reduced-motion.js existe (ver
+   comentário no topo do arquivo): pauseAnimations() é o único jeito de
+   parar animação SMIL sob prefers-reduced-motion, media query CSS não
+   alcança SMIL.
+
+   As trajetórias (@keyframes) desta ilustração ficam em
+   utilities/animations.css — aqui ficam apenas as declarações `animation:`
+   (duração, easing, delay), junto do elemento que se move.
+   ========================================================================== */
+
+.project-card--dashboard {
+  --project-chart-dark: #111827;
+}
+
+/* O SVG original tinha bottom:-5px (leve sangria sob o header, viewBox
+   mais alto que os 200px reais do header) — os cards RFM/Fraude usam
+   inset:0 (regra padrão em projects.css), só este sobrescreve. */
+.project-card--dashboard .project-card__illustration {
+  top: auto;
+  bottom: -0.3125rem;
+}
+
+.project-card__grid-line:nth-child(2) { animation-delay: -1.5s; }
+.project-card__grid-line:nth-child(3) { animation-delay: -3s; }
+.project-card__grid-line:nth-child(4) { animation-delay: -4.5s; }
+
+.project-card__chart-bar {
+  fill: url(#gray-gradient);
+  rx: 6px;
+  ry: 6px;
+  opacity: 0.9;
+}
+
+.project-card__trend-line {
+  fill: none;
+  stroke: var(--project-chart-dark);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.15));
+}
+
+.project-card__data-dot {
+  fill: var(--color-bg);
+  stroke: var(--project-chart-dark);
+  stroke-width: 2.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: project-dashboard-dot-breathe 2.4s ease-in-out infinite;
+}
+
+.project-card__data-dot:nth-child(odd) {
+  animation-delay: -1.2s;
+}
+
+/* Shimmer de luz varrendo o header — efeito "premium" puramente decorativo. */
+.project-card__chart-shimmer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.55) 48%, transparent 66%);
+  transform: translateX(-100%);
+  animation: project-dashboard-shimmer-sweep 5s ease-in-out infinite;
+}
