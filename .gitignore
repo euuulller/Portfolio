@@ -1,0 +1,43 @@
+# ==========================================================================
+# .gitignore — site estático, sem build. A lista abaixo é curta de
+# propósito: o que existe aqui é o que vai para produção. Se um arquivo
+# precisar ser ignorado, provavelmente ele não deveria estar na pasta.
+# ==========================================================================
+
+# Sistema operacional
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Editores
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Node — não há build no projeto, mas ferramentas pontuais
+# (http-server, validadores, lighthouse-ci) podem ser instaladas localmente.
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-error.log*
+
+# Ambiente
+.env
+.env.local
+
+# Logs e relatórios gerados por auditoria local
+*.log
+lighthouse-report.*
+.lighthouseci/
+
+# Temporários
+*.tmp
+*.bak
