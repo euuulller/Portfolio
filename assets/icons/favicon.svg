@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-label="Euller Duarte">
+  <title>Euller Duarte — Data Analyst</title>
+  <!-- Mesmo glifo "data stack" do headline da Hero (.hero__glyph): três
+       camadas de dados em opacidade decrescente. currentColor não se
+       aplica a favicon, então a cor é fixa e o fundo, transparente. -->
+  <rect x="6" y="3"  width="12" height="5" rx="2.5" fill="#111111" />
+  <rect x="4" y="10" width="16" height="5" rx="2.5" fill="#111111" opacity="0.7" />
+  <rect x="2" y="17" width="20" height="5" rx="2.5" fill="#111111" opacity="0.45" />
+</svg>
